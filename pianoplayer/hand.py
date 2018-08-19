@@ -5,6 +5,7 @@
 # Author:       Marco Musy
 #-------------------------------------------------------------------------------
 from __future__ import division, print_function
+from music21.articulations import Fingering
 
 #####################################################
 class Hand:
@@ -202,6 +203,13 @@ class Hand:
 
         start_finger, out, costf = 0, [0]*9, 0
 
+        # Remove existing fingerings
+        for an in self.noteseq:
+            if an.isChord:
+                an.chord21.articulations = [a for a in an.chord21.articulations if type(a) is not Fingering]
+            else:
+                an.note21.articulations = [a for a in an.note21.articulations if type(a) is not Fingering]
+
         for inote in range(len(self.noteseq)):
             an = self.noteseq[inote]
             i  = inote%self.fstep # position inside the group of step notes
@@ -224,15 +232,10 @@ class Hand:
             an.fingering = best_finger
             if best_finger>0:
                 if an.isChord:
-                    if not an.chord21.hasLyrics():
-                        for li in range(len(an.chord21.pitches)): an.chord21.addLyric('0')
-                    #an.chord21.addLyric(best_finger)
-                    nl = len(an.chord21.pitches)-an.chordnr
-                    an.chord21.addLyric(best_finger, nl)
+                    an.chord21.articulations.append(Fingering(best_finger))
                 else:
-                    an.note21.addLyric(best_finger)
+                    an.note21.articulations.append(Fingering(best_finger))
 
-            
             #-----------------------------
 
             print("meas."+str(an.measure), end='')
